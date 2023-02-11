@@ -32,9 +32,28 @@ namespace SistemaContas.Presentation.Controllers
         }
 
         /// <summary>
+        /// Método para receber o SUBMIT POST do formulario
+        /// </summary>
+        [HttpPost]
+        public IActionResult Register(AccountRegisterModel model)
+        {
+            return View();
+        }
+
+
+        /// <summary>
         /// Método para abrir a página /Account/PasswordRecover
         /// </summary>
         public IActionResult PasswordRecover()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// Método para receber o SUBMIT POST do formulario
+        /// </summary>
+        [HttpPost]
+        public IActionResult PasswordRecover(AccountPasswordRecoverModel model)
         {
             return View();
         }

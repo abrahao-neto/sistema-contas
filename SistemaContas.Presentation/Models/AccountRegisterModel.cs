@@ -16,7 +16,7 @@ namespace SistemaContas.Presentation.Models
         [Required(ErrorMessage = "Por favor, informe o email do usúario.")]
         public string? Email { get; set; }
 
-        [StrongPassword(ErrorMessage = "Por favor, informe uma senha forte de a 20 caracteres com pelo menos 1 letra minúscula, 1 letra maiúscula, 1 número e 1 caractere especial.")]
+        [StrongPassword(ErrorMessage = "Por favor, informe uma senha forte de 8 a 20 caracteres com pelo menos 1 letra minúscula, 1 letra maiúscula, 1 número e 1 caractere especial.")]
         [Required(ErrorMessage = "Por favor, informe a senha do usúario.")]
         public string? Senha { get; set; }
 
