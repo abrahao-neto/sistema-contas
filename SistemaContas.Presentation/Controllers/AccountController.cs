@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using SistemaContas.Data.Entities;
 using SistemaContas.Data.Repositories;
 using SistemaContas.Presentation.Models;
+using System.Security.Claims;
 
 namespace SistemaContas.Presentation.Controllers
 {
@@ -21,13 +25,55 @@ namespace SistemaContas.Presentation.Controllers
         [HttpPost]
         public IActionResult Login(AccountLoginModel model)
         {
+            //Verificando se os campos do formulario (model) passaram nas regras de validação mapeadas na classe
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var usuarioRepository = new UsuarioRepository();
+                    var usuario = usuarioRepository.ObterPorEmailESenha(model.Email, model.Senha);
+
+                    //Verificando se o usuário foi encontrado
+                    if (usuario != null)
+                    {
+                        //armazenar os dados do usuário autenticado
+                        var usuarioModel = new UsuarioModel();
+                        usuarioModel.IdUsuario = usuario.IdUsuario;
+                        usuarioModel.Nome = usuario.Nome;
+                        usuarioModel.Email = usuario.Email;
+                        usuarioModel.DataHoraAcesso = DateTime.Now;
+
+                        //criando a identificação do usuário autenticado para ser gravada no Cookie de autenticação
+                        var identity = new ClaimsIdentity(new[]
+                        {
+                            new Claim(ClaimTypes.Name, JsonConvert.SerializeObject(usuarioModel)) //identificação do usuário!
+                        }, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                        //gravar a identificação no Cookie de autenticação
+                        var principal = new ClaimsPrincipal(identity);
+                        HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);  
+
+                        //Redirecionando para a página /Dashboard/Index
+                        return RedirectToAction("Index", "Dashboard");
+                    }
+                    else
+                    {
+                        TempData["Mensagem"] = "Acesso negado. Usuário não encontardo.";
+                    }
+                }
+                catch (Exception e)
+                {
+
+                    TempData["Mensagem"] = "Falha ao autenticar usuário: " + e.Message;
+                }
+            }
+
             return View();
         }
 
         /// <summary>
         /// Método para abrir a página /Account/Register
         /// </summary>
-
         public IActionResult Register()
         {
             return View();
@@ -44,18 +90,25 @@ namespace SistemaContas.Presentation.Controllers
             {
                 try
                 {
-                    var usuario = new Usuario();
-                    usuario.IdUsuario = Guid.NewGuid();
-                    usuario.Nome = model.Nome;
-                    usuario.Email = model.Email;
-                    usuario.Senha = model.Senha;
-                    usuario.DataHoraCriacao = DateTime.Now;
-
                     var usuarioRepository = new UsuarioRepository();
-                    usuarioRepository.Inserir(usuario);
+                    if (usuarioRepository.ObterPorEmail(model.Email) != null) 
+                    {
+                        TempData["ErroEmail"] = "O email informado já está cadastrado no sistema, tente outro.";
+                    }
+                    else
+                    {
+                        var usuario = new Usuario();
+                        usuario.IdUsuario = Guid.NewGuid();
+                        usuario.Nome = model.Nome;
+                        usuario.Email = model.Email;
+                        usuario.Senha = model.Senha;
+                        usuario.DataHoraCriacao = DateTime.Now;
 
-                    TempData["Mensagem"] = "Parabéns, sua conta de usuário foi criada com sucesso!";
+                        usuarioRepository.Inserir(usuario);
 
+                        TempData["Mensagem"] = "Parabéns, sua conta de usuário foi criada com sucesso!";
+                        ModelState.Clear(); //Limpar os campos do formulário
+                    }
                 }
                 catch (Exception e)
                 {

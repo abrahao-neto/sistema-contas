@@ -32,8 +32,11 @@
                     <div class="mb-2">
                         <label>Entre com seu email:</label>
                         @Html.TextBoxFor(model => model.Email, new { @class = "form-control" })
-                            <span class="text-danger">
+                        <span class="text-danger">
                             @Html.ValidationMessageFor(model => model.Email)
+                        </span>
+                        <span class="text-danger"> 
+                            <strong>@TempData["ErroEmail"]</strong>
                         </span>
                     </div>
                     <div class="mb-2">
