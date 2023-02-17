@@ -135,5 +135,17 @@ namespace SistemaContas.Presentation.Controllers
         {
             return View();
         }
+
+        /// <summary>
+        /// Método para processar a requisiçãao de logout de usuário /Account/Logout
+        /// </summary>
+        public IActionResult Logout()
+        {
+            //apagar o cookie de autenticação do AspNet MVC
+            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            //redirecionar o usuário de volta para a página /Account/Login
+            return RedirectToAction("Login", "Account");
+        }
     }
 }

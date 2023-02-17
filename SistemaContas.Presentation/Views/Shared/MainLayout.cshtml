@@ -1,0 +1,80 @@
+﻿@using Newtonsoft.Json;
+@using SistemaContas.Presentation.Models;
+
+@{
+    var usuario = JsonConvert.DeserializeObject<UsuarioModel>(User.Identity.Name);
+}
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Sistema Contas</title>
+
+        <!-- folha de estilos CSS -->
+        <link rel="stylesheet" href="/css/bootstrap.min.css"/>
+    </head>
+    <body>
+
+        <!-- Menu superior do layout -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary " data-bs-theme="primary">
+          <div class="container-fluid">
+            <a class="navbar-brand" href="#">Sistema Contas</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link active" aria-current="page" href="/Dashboard/Index">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/Usuarios/MinhaConta">Minha Conta</a>
+                </li>
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Gerenciar Finanças
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/Contas/Cadastro">Cadastrar Contas</a></li>
+                    <li><a class="dropdown-item" href="/Contas/Consulta">Consultar Contas</a></li>
+                  </ul>
+                </li>
+              </ul>
+
+              <div class="d-flex">
+                  <div class="text-white">
+                      <div>@usuario.Nome</div>
+                      <div style="margin-top: -4px!important;"></div>
+                      <small>
+                          @usuario.Email
+                      </small>
+                  </div>
+                  &nbsp;&nbsp;&nbsp;
+                  <a href="/Account/Logout" class="btn btn-outline-light"
+                      onclick="return confirm('Deseja realmente sair do sistema?');">
+                      Sair do Sistema
+                  </a>
+                      
+              </div>
+
+            </div>
+          </div>
+        </nav>
+
+    <div class="container mt-3">
+        <div class="card">
+            <div class="card-body">
+                <!-- Área de conteúdo principal -->
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- arquivos javascript -->
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>
