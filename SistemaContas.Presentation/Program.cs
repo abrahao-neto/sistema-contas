@@ -1,18 +1,24 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using SistemaContas.Presentation;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//Habilitar o projeto para cookies no navegador do usuário
-builder.Services.Configure<CookiePolicyOptions>(Options => { Options.MinimumSameSitePolicy = SameSiteMode.None; });
+//Habilitar o projeto para gravar cookies no navegador do usuário
+builder.Services.Configure<CookiePolicyOptions>(options => { options.MinimumSameSitePolicy = SameSiteMode.None; });
 
 //Definir o tipo de autenticação implementado pelo projeto (Cookie de identificação de usuário)
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
 
 var app = builder.Build();
+
+var cultureInfo = new CultureInfo("pt-BR");
+
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -27,7 +33,7 @@ app.UseMiddleware<CacheControl>();
 
 //ativando as configurações
 app.UseCookiePolicy();
-app.UseAuthorization();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
@@ -35,3 +41,6 @@ app.MapControllerRoute(
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
+
+
+

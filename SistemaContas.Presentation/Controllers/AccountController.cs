@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using Bogus;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SistemaContas.Data.Entities;
 using SistemaContas.Data.Repositories;
+using SistemaContas.Messages.Models;
+using SistemaContas.Messages.Services;
 using SistemaContas.Presentation.Models;
 using System.Security.Claims;
 
@@ -128,13 +131,60 @@ namespace SistemaContas.Presentation.Controllers
         }
 
         /// <summary>
-        /// Método para receber o SUBMIT POST do formulario
+        /// Método para receber o SUBMIT POST do formulário
         /// </summary>
         [HttpPost]
         public IActionResult PasswordRecover(AccountPasswordRecoverModel model)
         {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    //Buscar o usuário no banco de dados através do email
+                    var usuarioRepository = new UsuarioRepository();
+                    var usuario = usuarioRepository.ObterPorEmail(model.Email);
+
+                    //verificando se o usuário foi encontrado
+                    if (usuario != null)
+                    {
+                        //gerar uma nova senha para o usuário
+                        var novaSenha = new Faker().Internet.Password(10) + "@";
+
+                        //criando o conteúdo do email
+                        var emailMessageModel = new EmailMessageModel();
+                        emailMessageModel.EmailDestinatario = usuario.Email;
+                        emailMessageModel.Assunto = "Recuperação de Senha - Sistema Contas";
+                        emailMessageModel.Mensagem = $@"
+                            <h4>Olá, {usuario.Nome}! Uma nova senha foi gerada com sucesso.</h4>
+                            <p>Acesse sua conta com a senha: <strong>{novaSenha}</strong></p>
+                            <p>Em seguida, vá até o menu 'Usuário > Meus Dados' e modifique a senha para outra de sua preferência.</p>
+                            <p>Att,</p>
+                            <p>Equipe Sistema Contas</p>
+                        ";
+
+                        //enviando a senha para o email do usuário
+                        EmailMessageService.EnviarMensagem(emailMessageModel);
+
+                        //alterar a senha do usuário no banco de dados
+                        usuarioRepository.Atualizar(usuario.IdUsuario, novaSenha);
+
+                        TempData["Mensagem"] = $"Recuperação de senha realizada com sucesso. Verifique sua caixa de email.";
+                        ModelState.Clear();
+                    }
+                    else
+                    {
+                        TempData["Mensagem"] = "Usuário não encontrado. Verifique o email informado.";
+                    }
+                }
+                catch (Exception e)
+                {
+                    TempData["Mensagem"] = "Falha ao recuperar senha: " + e.Message;
+                }
+            }
+
             return View();
         }
+
 
         /// <summary>
         /// Método para processar a requisiçãao de logout de usuário /Account/Logout

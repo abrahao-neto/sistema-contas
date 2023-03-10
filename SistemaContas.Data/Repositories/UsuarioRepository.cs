@@ -42,6 +42,26 @@ namespace SistemaContas.Data.Repositories
         }
 
         /// <summary>
+        /// Método para alterar a senha do usuário
+        /// </summary>
+        public void Atualizar(Guid? idUsuario, string? novaSenha)
+        {
+            var query = @"
+                UPDATE USUARIO 
+                SET 
+                    SENHA = CONVERT(VARCHAR(32), HASHBYTES('MD5', @novaSenha), 2)
+                WHERE
+                    IDUSUARIO = @idUsuario
+            ";
+
+            using (var connection = new SqlConnection(SqlServerConfiguration.ConnectionString))
+            {
+                connection.Execute(query, new { idUsuario, novaSenha });
+            }
+        }
+
+
+        /// <summary>
         /// Método para consultar 1 usuário através do email
         /// </summary>
         public Usuario? ObterPorEmail(string email)

@@ -100,9 +100,21 @@ namespace SistemaContas.Presentation.Controllers
                 //verificar se a categoria foi encontrada
                 if (categoria != null && categoria.IdUsuario == usuarioModel.IdUsuario)
                 {
-                    //excluindo a categoria
-                    categoriaRepository.Excluir(categoria);
-                    TempData["MensagemSucesso"] = "Categoria excluída com sucesso.";
+                    //trazer a quantidade de contas da categoria
+                    var qtdContas = categoriaRepository.ObterQuantidadeContas(categoria.IdCategoria);
+
+                    //verificar se a categoria não possui contas
+                    if (qtdContas == 0)
+                    {
+                        //excluindo a categoria
+                        categoriaRepository.Excluir(categoria);
+                        TempData["MensagemSucesso"] = "Categoria excluída com sucesso.";
+                    }
+                    else
+                    {
+                        TempData["MensagemAlerta"] = $"Não é possível excluir a categoria, pois ela possui { qtdContas} conta(s) vinculada(s).";
+                    }
+
                 }
             }
             catch (Exception e)
